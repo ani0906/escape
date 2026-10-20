@@ -6,7 +6,7 @@
   <title>羽翼下的抉擇：鏡中真相</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -16,8 +16,8 @@
     }
 
     body {
-      background-color: #050508;
-      color: #e0d8d0;
+      background-color: #030305;
+      color: #e5e5e5;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       min-height: 100vh;
       display: flex;
@@ -26,45 +26,55 @@
       overflow: hidden;
     }
 
-    /* 主標題 Creepster / Noto Serif TC */
+    /* 驚悚主標題 */
     .horror-title {
       font-family: 'Creepster', 'Noto Serif TC', serif;
-      color: #b91c1c;
-      text-shadow: 0 0 10px rgba(185, 28, 28, 0.8), 2px 2px 4px #000;
-      letter-spacing: 2px;
+      color: #dc2626;
+      text-shadow: 0 0 20px rgba(220, 38, 38, 0.9), 0 0 40px rgba(185, 28, 28, 0.6), 2px 2px 8px #000;
+      letter-spacing: 4px;
+      font-size: 3.2rem;
     }
 
     .game-viewport {
       width: 100vw;
       height: 100vh;
-      max-width: 900px;
-      max-height: 675px;
-      background: #0a0a0f;
-      border: 2px solid #2a1515;
-      box-shadow: 0 0 50px rgba(185, 28, 28, 0.2);
+      max-width: 920px;
+      max-height: 690px;
+      background: #07070a;
+      border: 2px solid #2a1212;
+      box-shadow: 0 0 60px rgba(185, 28, 28, 0.25), inset 0 0 80px rgba(0, 0, 0, 0.9);
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      border-radius: 8px;
     }
 
-    /* 驚悚氛圍遮罩 */
+    /* 暗角與電影底片紋理遮罩 */
     .vignette {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.85) 90%);
+      background: radial-gradient(circle, transparent 35%, rgba(2, 2, 4, 0.88) 85%, rgba(0, 0, 0, 0.98) 100%);
       pointer-events: none;
       z-index: 10;
     }
 
-    .scanline {
+    .noise-overlay {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%);
       background-size: 100% 4px;
       pointer-events: none;
       z-index: 11;
-      opacity: 0.6;
+      opacity: 0.55;
+    }
+
+    /* 微粒子 Canvas 繪製背景大氣霧氣與塵埃 */
+    #ambientCanvas {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 5;
     }
 
     /* 場景容器 */
@@ -74,7 +84,7 @@
       display: none;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.5s ease-in-out;
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .scene.active {
@@ -83,35 +93,38 @@
       pointer-events: auto;
     }
 
-    /* 鏽湖風格左右箭頭導航 */
+    /* 鏽湖風格古典銅質感切換箭頭 */
     .nav-arrow {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 50px;
-      height: 70px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 2rem;
+      width: 54px;
+      height: 76px;
+      background: rgba(10, 8, 8, 0.65);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      color: #d97706;
+      font-size: 2.2rem;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
       z-index: 20;
-      transition: all 0.2s;
-      border-radius: 6px;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
     }
 
     .nav-arrow:hover {
-      background: rgba(185, 28, 28, 0.6);
+      background: rgba(185, 28, 28, 0.75);
       color: #fff;
-      border-color: #b91c1c;
-      box-shadow: 0 0 12px rgba(185, 28, 28, 0.8);
+      border-color: #f87171;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+      transform: translateY(-50%) scale(1.08);
     }
 
-    .nav-arrow.left { left: 15px; }
-    .nav-arrow.right { right: 15px; }
+    .nav-arrow.left { left: 18px; }
+    .nav-arrow.right { right: 18px; }
 
     /* --- 開始畫面 --- */
     #startScene {
@@ -121,39 +134,39 @@
       align-items: center;
       text-align: center;
       padding: 20px;
-      background: radial-gradient(circle, #1a0808 0%, #050505 100%);
+      background: radial-gradient(circle, #200a0a 0%, #080303 100%);
       z-index: 15;
     }
 
     #startScene h1 {
-      font-size: 3rem;
-      margin-bottom: 40px;
+      margin-bottom: 45px;
     }
 
     .start-btn {
-      background: #450a0a;
-      color: #f87171;
-      border: 1px solid #991b1b;
-      padding: 14px 40px;
-      font-size: 1.2rem;
+      background: linear-gradient(180deg, #581c1c 0%, #320a0a 100%);
+      color: #fca5a5;
+      border: 1px solid #b91c1c;
+      padding: 16px 48px;
+      font-size: 1.25rem;
       font-weight: 700;
       cursor: pointer;
-      border-radius: 4px;
-      box-shadow: 0 0 15px rgba(153, 27, 27, 0.4);
-      transition: all 0.3s ease;
+      border-radius: 6px;
+      box-shadow: 0 0 20px rgba(185, 28, 28, 0.4), inset 0 1px 1px rgba(255,255,255,0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 20;
       text-decoration: none;
       display: inline-block;
+      letter-spacing: 2px;
     }
 
     .start-btn:hover {
-      background: #7f1d1d;
+      background: linear-gradient(180deg, #991b1b 0%, #581c1c 100%);
       color: #fff;
-      box-shadow: 0 0 25px rgba(220, 38, 38, 0.8);
-      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.9), inset 0 1px 1px rgba(255,255,255,0.4);
+      transform: translateY(-2px) scale(1.04);
     }
 
-    /* SVG 背景容器 */
+    /* SVG 背景圖形層 */
     .svg-background {
       width: 100%;
       height: 100%;
@@ -162,17 +175,17 @@
       left: 0;
     }
 
-    /* 發光閃爍項圈提示 */
+    /* 項圈閃爍脈沖提示點 */
     .glowing-collar {
       position: absolute;
-      top: 45%;
-      left: 49%;
-      width: 36px;
-      height: 36px;
+      top: 45.5%;
+      left: 49.1%;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      background: rgba(251, 191, 36, 0.4);
+      background: rgba(251, 191, 36, 0.35);
       border: 2px solid #fbbf24;
-      box-shadow: 0 0 15px #fbbf24, inset 0 0 10px #fbbf24;
+      box-shadow: 0 0 18px #fbbf24, inset 0 0 10px #f59e0b;
       animation: pulseGlow 1.8s infinite ease-in-out;
       cursor: pointer;
       z-index: 15;
@@ -180,42 +193,42 @@
 
     @keyframes pulseGlow {
       0%, 100% {
-        transform: scale(0.9);
-        opacity: 0.5;
-        box-shadow: 0 0 8px #fbbf24;
+        transform: scale(0.92);
+        opacity: 0.6;
+        box-shadow: 0 0 10px #fbbf24;
       }
       50% {
-        transform: scale(1.25);
+        transform: scale(1.3);
         opacity: 1;
-        box-shadow: 0 0 22px #f59e0b, 0 0 35px #d97706;
+        box-shadow: 0 0 28px #f59e0b, 0 0 45px #d97706;
       }
     }
 
-    /* 去背純 SVG 發光鑰匙物件 */
+    /* 去背純 SVG 發光黃金鑰匙 */
     .key-item-pure {
       position: absolute;
       top: 61%;
       left: 48.5%;
-      width: 48px;
-      height: 48px;
+      width: 52px;
+      height: 52px;
       cursor: pointer;
       z-index: 18;
       display: none;
-      filter: drop-shadow(0 0 10px #fbbf24) drop-shadow(0 0 20px #f59e0b);
-      animation: keyPulse 1.5s infinite ease-in-out;
+      filter: drop-shadow(0 0 12px #fbbf24) drop-shadow(0 0 25px #f59e0b);
+      animation: keyPulse 1.6s infinite ease-in-out;
     }
 
     @keyframes keyPulse {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px #fbbf24); }
-      50% { transform: scale(1.15); filter: drop-shadow(0 0 18px #fef08a) drop-shadow(0 0 25px #f59e0b); }
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px #fbbf24); }
+      50% { transform: scale(1.18); filter: drop-shadow(0 0 22px #fef08a) drop-shadow(0 0 35px #f59e0b); }
     }
 
-    /* --- 密碼鎖 Modal（無字純極簡風格） --- */
+    /* --- 密碼鎖 Modal（復古哥德式精緻金屬盤） --- */
     .modal-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(5, 5, 8, 0.92);
-      backdrop-filter: blur(8px);
+      background: rgba(4, 4, 6, 0.93);
+      backdrop-filter: blur(10px);
       display: none;
       justify-content: center;
       align-items: center;
@@ -227,33 +240,33 @@
     }
 
     .lock-card {
-      background: #18181b;
-      border: 2px solid #3f3f46;
-      border-radius: 16px;
-      padding: 35px 25px 25px 25px;
-      width: 320px;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), 0 0 15px rgba(185, 28, 28, 0.3);
+      background: linear-gradient(145deg, #1f1d24 0%, #0e0d11 100%);
+      border: 2px solid #4a3e3d;
+      border-radius: 20px;
+      padding: 40px 30px 30px 30px;
+      width: 340px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 20px rgba(185, 28, 28, 0.35);
       position: relative;
     }
 
     .close-btn {
       position: absolute;
-      top: 10px;
-      right: 14px;
+      top: 12px;
+      right: 16px;
       background: none;
       border: none;
-      color: #71717a;
-      font-size: 1.6rem;
+      color: #8b8589;
+      font-size: 1.8rem;
       cursor: pointer;
+      transition: color 0.2s;
     }
 
     .close-btn:hover { color: #f87171; }
 
-    /* 密碼滾輪排列 (對應紅、黃、藍) */
     .dials-container {
       display: flex;
       justify-content: center;
-      gap: 18px;
+      gap: 22px;
       margin-top: 10px;
     }
 
@@ -264,61 +277,62 @@
     }
 
     .dial-btn {
-      background: #27272a;
-      border: 1px solid #52525b;
-      color: #f4f4f5;
-      width: 44px;
-      height: 32px;
+      background: linear-gradient(180deg, #322d37 0%, #1c1921 100%);
+      border: 1px solid #5a4f5c;
+      color: #e4e4e7;
+      width: 48px;
+      height: 36px;
       font-size: 1.1rem;
       cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.2s;
+      border-radius: 6px;
+      transition: all 0.2s;
     }
 
     .dial-btn:hover {
-      background: #3f3f46;
+      background: #4a3e50;
       color: #fff;
+      border-color: #93819a;
     }
 
     .dial-display {
-      width: 56px;
-      height: 64px;
-      background: #09090b;
-      border-radius: 8px;
-      margin: 8px 0;
-      font-size: 2.4rem;
+      width: 62px;
+      height: 72px;
+      background: #060508;
+      border-radius: 10px;
+      margin: 10px 0;
+      font-size: 2.6rem;
       font-family: 'Creepster', cursive;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
       font-weight: bold;
     }
 
-    /* 紅色框格 */
+    /* 紅色寶石框格 */
     .dial-red {
       border: 2px solid #ef4444;
-      color: #ef4444;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 12px rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9), 0 0 16px rgba(239, 68, 68, 0.5);
     }
 
-    /* 黃色框格 */
+    /* 黃色寶石框格 */
     .dial-yellow {
       border: 2px solid #eab308;
-      color: #eab308;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 12px rgba(234, 179, 8, 0.4);
+      color: #facc15;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9), 0 0 16px rgba(234, 179, 8, 0.5);
     }
 
-    /* 藍色框格 */
+    /* 藍色寶石框格 */
     .dial-blue {
       border: 2px solid #3b82f6;
-      color: #3b82f6;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 0 12px rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9), 0 0 16px rgba(59, 130, 246, 0.5);
     }
 
-    /* --- 場景：鏡子與倒影 --- */
+    /* --- 場景：古老橢圓鏡與魔幻靈魂倒影 --- */
     #mirrorScene {
-      background: #050505;
+      background: #030304;
       display: none;
       flex-direction: column;
       justify-content: center;
@@ -326,16 +340,21 @@
     }
 
     .mirror-frame {
-      width: 280px;
-      height: 380px;
-      border: 12px solid #292524;
-      border-radius: 140px 140px 20px 20px;
-      background: radial-gradient(circle, #1c1917 0%, #0c0a09 100%);
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 0, 0, 0.9);
+      width: 300px;
+      height: 400px;
+      border: 14px solid #1c1917;
+      border-radius: 150px 150px 30px 30px;
+      background: radial-gradient(circle, #26201e 0%, #0a0808 100%);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), inset 0 0 30px rgba(0, 0, 0, 0.95), 0 0 15px rgba(217, 119, 6, 0.15);
       position: relative;
       overflow: hidden;
-      margin-bottom: 24px;
+      margin-bottom: 26px;
       cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .mirror-frame:hover {
+      transform: scale(1.02);
     }
 
     .mirror-glass {
@@ -348,39 +367,40 @@
     }
 
     .owl-reflection {
-      width: 220px;
-      height: 220px;
+      width: 250px;
+      height: 250px;
       opacity: 0;
-      filter: blur(4px) grayscale(40%);
-      transition: opacity 2.5s ease-in-out, filter 2.5s ease-in-out;
+      filter: blur(8px) grayscale(30%);
+      transition: opacity 2.8s cubic-bezier(0.4, 0, 0.2, 1), filter 2.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .owl-reflection.revealed {
-      opacity: 0.95;
-      filter: blur(0px) drop-shadow(0 0 15px rgba(245, 158, 11, 0.6));
+      opacity: 0.98;
+      filter: blur(0px) drop-shadow(0 0 20px rgba(245, 158, 11, 0.7));
     }
 
     .crack-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
       pointer-events: none;
-      opacity: 0.6;
+      opacity: 0.65;
     }
 
     .story-text {
-      max-width: 550px;
+      max-width: 580px;
       text-align: center;
-      font-size: 1.1rem;
-      line-height: 1.8;
-      color: #d4d4d8;
+      font-size: 1.15rem;
+      line-height: 1.95;
+      color: #e4e4e7;
       min-height: 80px;
       padding: 0 20px;
     }
 
     .story-text span.highlight {
-      color: #f59e0b;
+      color: #fbbf24;
       font-weight: bold;
-      font-size: 1.3rem;
+      font-size: 1.35rem;
+      text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
     }
   </style>
 </head>
@@ -388,160 +408,205 @@
 
   <div class="game-viewport">
     <div class="vignette"></div>
-    <div class="scanline"></div>
+    <div class="noise-overlay"></div>
+    <canvas id="ambientCanvas"></canvas>
 
-    <!-- ===== 1. 開始畫面 (只留標題與按鈕) ===== -->
+    <!-- ===== 1. 開始畫面 (純極簡僅留標題與按鈕) ===== -->
     <div id="startScene" class="scene active" style="display: flex;">
       <h1 class="horror-title">羽翼下的抉擇：鏡中真相</h1>
       <button class="start-btn" onclick="initGame()">進入荒野</button>
     </div>
 
-    <!-- ===== 2. 左邊場景：八隻不規則散落的藍色死老鼠 ===== -->
+    <!-- ===== 2. 左邊場景：八隻繪製精緻、自然散落的藍色死老鼠 ===== -->
     <div id="leftScene" class="scene">
       <div class="nav-arrow right" onclick="switchScene('mainScene')">❯</div>
       <svg class="svg-background" viewBox="0 0 800 600" preserveAspectRatio="none">
-        <!-- 荒涼陰暗背景 -->
-        <rect width="800" height="600" fill="#06080c"/>
-        <path d="M 0 450 Q 300 420 800 480 L 800 600 L 0 600 Z" fill="#0f141d"/>
-        <!-- 白芒草叢乾枯殘影 -->
-        <g stroke="#1e293b" stroke-width="2" opacity="0.6">
-          <path d="M 50 600 Q 70 480 120 400"/>
-          <path d="M 180 600 Q 210 450 250 380"/>
-          <path d="M 600 600 Q 640 460 700 390"/>
+        <defs>
+          <radialGradient id="nightGlowLeft" cx="50%" cy="80%" r="70%">
+            <stop offset="0%" stop-color="#0f172a"/>
+            <stop offset="100%" stop-color="#020305"/>
+          </radialGradient>
+          
+          <filter id="ratGlow">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#3b82f6" flood-opacity="0.3"/>
+          </filter>
+        </defs>
+
+        <rect width="800" height="600" fill="url(#nightGlowLeft)"/>
+        
+        <!-- 地表地形丘陵 -->
+        <path d="M 0 430 Q 250 390 500 440 T 800 410 L 800 600 L 0 600 Z" fill="#090d16"/>
+        <path d="M 0 490 Q 350 460 800 510 L 800 600 L 0 600 Z" fill="#04060a"/>
+
+        <!-- 枯乾白芒草殘影層 -->
+        <g stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" opacity="0.6">
+          <path d="M 40 600 Q 60 480 110 390 M 50 600 Q 80 470 130 380"/>
+          <path d="M 170 600 Q 200 450 240 370 M 185 600 Q 220 440 270 360"/>
+          <path d="M 580 600 Q 620 460 680 380 M 600 600 Q 640 450 710 370"/>
         </g>
 
-        <!-- 8 隻藍色死老鼠散落分佈（自然且凌亂） -->
-        <g id="deadRatsGroup">
-          <!-- 老鼠 1：左前趴著 -->
-          <g transform="translate(140, 530) rotate(68) scale(1.05)">
-            <ellipse cx="0" cy="0" rx="20" ry="10" fill="#2563eb"/>
-            <circle cx="-16" cy="-2" r="6" fill="#1d4ed8"/>
-            <path d="M 18 0 Q 30 -5 35 5" stroke="#3b82f6" stroke-width="2" fill="none"/>
-            <text x="-4" y="3" fill="#60a5fa" font-size="8">x x</text>
+        <!-- 8 隻精細藍色死老鼠 (姿態各異、自然散落、具備立體細節與側光) -->
+        <g id="deadRatsGroup" filter="url(#ratGlow)">
+          <!-- 老鼠 1：左前側身俯臥 -->
+          <g transform="translate(130, 520) rotate(55) scale(0.95)">
+            <ellipse cx="0" cy="0" rx="22" ry="11" fill="#2563eb"/>
+            <circle cx="-18" cy="-2" r="7" fill="#1d4ed8"/>
+            <circle cx="-21" cy="-4" r="3" fill="#1e40af"/> <!-- 耳朵 -->
+            <path d="M 19 0 Q 32 -6 38 6" stroke="#3b82f6" stroke-width="2.5" fill="none"/>
+            <line x1="-12" y1="9" x2="-8" y2="16" stroke="#1e3a8a" stroke-width="2.5"/>
+            <line x1="10" y1="9" x2="14" y2="16" stroke="#1e3a8a" stroke-width="2.5"/>
+            <text x="-6" y="3" fill="#93c5fd" font-size="9" font-weight="bold">x x</text>
           </g>
-          <!-- 老鼠 2：倒掛在草叢邊 -->
-          <g transform="translate(230, 470) rotate(-110) scale(0.85)">
+
+          <!-- 老鼠 2：倒掛在後方草根 -->
+          <g transform="translate(220, 465) rotate(-115) scale(0.8)">
             <ellipse cx="0" cy="0" rx="20" ry="10" fill="#1d4ed8"/>
             <circle cx="-16" cy="-2" r="6" fill="#1e40af"/>
-            <path d="M 18 0 Q 30 5 38 -2" stroke="#3b82f6" stroke-width="2" fill="none"/>
-            <text x="-4" y="3" fill="#93c5fd" font-size="8">x x</text>
+            <circle cx="-19" cy="-4" r="2.5" fill="#172554"/>
+            <path d="M 18 0 Q 30 6 36 -3" stroke="#60a5fa" stroke-width="2" fill="none"/>
+            <text x="-5" y="3" fill="#93c5fd" font-size="8" font-weight="bold">x x</text>
           </g>
-          <!-- 老鼠 3：中央近景四腳朝天 -->
-          <g transform="translate(310, 550) rotate(165) scale(1.15)">
-            <ellipse cx="0" cy="0" rx="20" ry="10" fill="#2563eb"/>
-            <circle cx="-16" cy="-2" r="6" fill="#1d4ed8"/>
-            <path d="M 18 0 Q 25 8 32 2" stroke="#60a5fa" stroke-width="2" fill="none"/>
-            <line x1="-10" y1="-8" x2="-6" y2="-15" stroke="#1e40af" stroke-width="2"/>
-            <line x1="8" y1="-8" x2="12" y2="-15" stroke="#1e40af" stroke-width="2"/>
-            <text x="-4" y="3" fill="#93c5fd" font-size="8">x x</text>
+
+          <!-- 老鼠 3：中央近景仰躺四腳朝天 -->
+          <g transform="translate(320, 545) rotate(170) scale(1.1)">
+            <ellipse cx="0" cy="0" rx="24" ry="12" fill="#2563eb"/>
+            <circle cx="-20" cy="-2" r="8" fill="#1d4ed8"/>
+            <circle cx="-23" cy="-5" r="3.5" fill="#1e40af"/>
+            <path d="M 20 0 Q 28 10 35 3" stroke="#60a5fa" stroke-width="2.5" fill="none"/>
+            <line x1="-12" y1="-8" x2="-8" y2="-17" stroke="#1d4ed8" stroke-width="2.5"/>
+            <line x1="8" y1="-8" x2="12" y2="-17" stroke="#1d4ed8" stroke-width="2.5"/>
+            <text x="-6" y="3" fill="#bfdbfe" font-size="10" font-weight="bold">x x</text>
           </g>
-          <!-- 老鼠 4：中後側臥 -->
-          <g transform="translate(390, 485) rotate(-25) scale(0.9)">
-            <ellipse cx="0" cy="0" rx="20" ry="10" fill="#1d4ed8"/>
+
+          <!-- 老鼠 4：中後側臥屈體 -->
+          <g transform="translate(410, 480) rotate(-20) scale(0.85)">
+            <ellipse cx="0" cy="0" rx="21" ry="10" fill="#1d4ed8"/>
+            <circle cx="-17" cy="-2" r="6.5" fill="#1e40af"/>
+            <path d="M 18 0 Q 28 -10 34 -2" stroke="#3b82f6" stroke-width="2" fill="none"/>
+            <text x="-5" y="3" fill="#60a5fa" font-size="8" font-weight="bold">x x</text>
+          </g>
+
+          <!-- 老鼠 5：中右側斜向死僵 -->
+          <g transform="translate(495, 520) rotate(125) scale(0.9)">
+            <ellipse cx="0" cy="0" rx="22" ry="11" fill="#2563eb"/>
+            <circle cx="-18" cy="-2" r="7" fill="#1d4ed8"/>
+            <path d="M 19 0 Q 28 6 36 0" stroke="#60a5fa" stroke-width="2" fill="none"/>
+            <text x="-5" y="3" fill="#93c5fd" font-size="9" font-weight="bold">x x</text>
+          </g>
+
+          <!-- 老鼠 6：右後小隻隱沒於暗處 -->
+          <g transform="translate(585, 470) rotate(-80) scale(0.75)">
+            <ellipse cx="0" cy="0" rx="20" ry="9" fill="#1d4ed8"/>
             <circle cx="-16" cy="-2" r="6" fill="#1e40af"/>
-            <path d="M 18 0 Q 30 -8 35 -1" stroke="#3b82f6" stroke-width="2" fill="none"/>
-            <text x="-4" y="3" fill="#60a5fa" font-size="8">x x</text>
+            <path d="M 17 0 Q 25 -10 32 -3" stroke="#3b82f6" stroke-width="2" fill="none"/>
+            <text x="-5" y="3" fill="#60a5fa" font-size="8" font-weight="bold">x x</text>
           </g>
-          <!-- 老鼠 5：中右側斜躺 -->
-          <g transform="translate(480, 525) rotate(135) scale(0.95)">
-            <ellipse cx="0" cy="0" rx="20" ry="10" fill="#2563eb"/>
-            <circle cx="-16" cy="-2" r="6" fill="#1d4ed8"/>
-            <path d="M 18 0 Q 28 5 36 0" stroke="#3b82f6" stroke-width="2" fill="none"/>
-            <text x="-4" y="3" fill="#93c5fd" font-size="8">x x</text>
+
+          <!-- 老鼠 7：右前巨大伏倒 -->
+          <g transform="translate(670, 540) rotate(22) scale(1.05)">
+            <ellipse cx="0" cy="0" rx="24" ry="12" fill="#2563eb"/>
+            <circle cx="-20" cy="-2" r="8" fill="#1d4ed8"/>
+            <circle cx="-23" cy="-5" r="3.5" fill="#1e40af"/>
+            <path d="M 21 0 Q 32 8 40 2" stroke="#60a5fa" stroke-width="2.5" fill="none"/>
+            <text x="-6" y="3" fill="#bfdbfe" font-size="10" font-weight="bold">x x</text>
           </g>
-          <!-- 老鼠 6：右後小隻 -->
-          <g transform="translate(580, 475) rotate(-75) scale(0.8)">
-            <ellipse cx="0" cy="0" rx="20" ry="10" fill="#1d4ed8"/>
-            <circle cx="-16" cy="-2" r="6" fill="#1e40af"/>
-            <path d="M 18 0 Q 25 -10 32 -4" stroke="#60a5fa" stroke-width="2" fill="none"/>
-            <text x="-4" y="3" fill="#60a5fa" font-size="8">x x</text>
-          </g>
-          <!-- 老鼠 7：右前趴躺 -->
-          <g transform="translate(660, 545) rotate(15) scale(1.1)">
-            <ellipse cx="0" cy="0" rx="20" ry="10" fill="#2563eb"/>
-            <circle cx="-16" cy="-2" r="6" fill="#1d4ed8"/>
-            <path d="M 18 0 Q 30 6 38 2" stroke="#3b82f6" stroke-width="2" fill="none"/>
-            <text x="-4" y="3" fill="#93c5fd" font-size="8">x x</text>
-          </g>
-          <!-- 老鼠 8：最右側邊緣斜歪 -->
-          <g transform="translate(730, 510) rotate(-145) scale(0.9)">
-            <ellipse cx="0" cy="0" rx="20" ry="10" fill="#1d4ed8"/>
-            <circle cx="-16" cy="-2" r="6" fill="#1e40af"/>
-            <path d="M 18 0 Q 28 -4 34 5" stroke="#60a5fa" stroke-width="2" fill="none"/>
-            <text x="-4" y="3" fill="#60a5fa" font-size="8">x x</text>
+
+          <!-- 老鼠 8：最右側邊緣蜷曲 -->
+          <g transform="translate(740, 500) rotate(-138) scale(0.85)">
+            <ellipse cx="0" cy="0" rx="21" ry="10" fill="#1d4ed8"/>
+            <circle cx="-17" cy="-2" r="6.5" fill="#1e40af"/>
+            <path d="M 18 0 Q 28 -5 34 6" stroke="#3b82f6" stroke-width="2" fill="none"/>
+            <text x="-5" y="3" fill="#60a5fa" font-size="8" font-weight="bold">x x</text>
           </g>
         </g>
       </svg>
     </div>
 
-    <!-- ===== 3. 主畫面（中間）：草叢荒野、狗雕像、縮小版紅色草鴞剪影 ===== -->
+    <!-- ===== 3. 主畫面（中間）：草叢荒野、狗雕像、縮小版暗紅草鴞剪影 ===== -->
     <div id="mainScene" class="scene">
-      <!-- 往左場景箭頭向左 ❮ -->
       <div class="nav-arrow left" onclick="switchScene('leftScene')">❮</div>
-      <!-- 往右場景箭頭向右 ❯ -->
       <div class="nav-arrow right" onclick="switchScene('rightScene')">❯</div>
 
       <svg class="svg-background" viewBox="0 0 800 600" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#050811"/>
-            <stop offset="100%" stop-color="#111827"/>
+          <linearGradient id="skyGradMain" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#04060c"/>
+            <stop offset="60%" stop-color="#0c1220"/>
+            <stop offset="100%" stop-color="#172033"/>
           </linearGradient>
+
+          <!-- 雕像質感陰影 filter -->
+          <filter id="statueShadow">
+            <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#000000" flood-opacity="0.9"/>
+          </filter>
+
+          <!-- 神祕草鴞紅色發光 filter -->
+          <filter id="owlAura">
+            <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#ef4444" flood-opacity="0.8"/>
+          </filter>
         </defs>
 
-        <!-- 夜空與月亮 -->
-        <rect width="800" height="600" fill="url(#skyGrad)"/>
-        <circle cx="680" cy="120" r="45" fill="#fef3c7" opacity="0.15"/>
-        <circle cx="680" cy="120" r="35" fill="#fffbeb" opacity="0.7"/>
+        <!-- 夜空與明月 -->
+        <rect width="800" height="600" fill="url(#skyGradMain)"/>
+        <circle cx="680" cy="110" r="50" fill="#fef3c7" opacity="0.1"/>
+        <circle cx="680" cy="110" r="38" fill="#fffbeb" opacity="0.8"/>
 
-        <!-- 遠景山丘 -->
-        <path d="M 0 420 Q 200 350 400 410 T 800 380 L 800 600 L 0 600 Z" fill="#0f172a"/>
+        <!-- 遠景層次山丘剪影 -->
+        <path d="M 0 410 Q 220 330 450 390 T 800 360 L 800 600 L 0 600 Z" fill="#0d1424"/>
 
-        <!-- 背景：1 隻縮小版的紅色草鴞剪影 (神秘亮紅色線條/剪影) -->
-        <g transform="translate(260, 220) scale(0.38)" opacity="0.8">
-          <!-- 草鴞身體 -->
-          <path d="M 100 40 C 60 40, 40 80, 40 140 C 40 200, 80 230, 100 230 C 120 230, 160 200, 160 140 C 160 80, 140 40, 100 40 Z" fill="#991b1b"/>
-          <!-- 心形面盤結構 -->
-          <path d="M 100 70 C 80 50, 55 70, 55 115 C 55 160, 85 185, 100 200 C 115 185, 145 160, 145 115 C 145 70, 120 50, 100 70 Z" fill="#dc2626"/>
+        <!-- 背景：1 隻縮小版、極具線條韻味與心形面盤細節的紅色草鴞剪影 -->
+        <g transform="translate(270, 225) scale(0.38)" opacity="0.85" filter="url(#owlAura)">
+          <!-- 主羽翼體軀 -->
+          <path d="M 100 30 C 50 30, 30 75, 30 145 C 30 215, 75 245, 100 245 C 125 245, 170 215, 170 145 C 170 75, 150 30, 100 30 Z" fill="#7f1d1d"/>
+          <!-- 標誌性草鴞心形面盤 -->
+          <path d="M 100 65 C 75 45, 48 68, 48 118 C 48 168, 82 195, 100 212 C 118 195, 152 168, 152 118 C 152 68, 125 45, 100 65 Z" fill="#b91c1c"/>
           <!-- 雙眼發光紅點 -->
-          <circle cx="78" cy="115" r="8" fill="#f87171"/>
-          <circle cx="122" cy="115" r="8" fill="#f87171"/>
-          <!-- 展開羽翼剪影 -->
-          <path d="M 45 130 C 10 110, -40 150, -80 210 C -30 200, 20 180, 40 160 Z" fill="#7f1d1d"/>
-          <path d="M 155 130 C 190 110, 240 150, 280 210 C 230 200, 180 180, 160 160 Z" fill="#7f1d1d"/>
+          <circle cx="76" cy="118" r="8" fill="#fca5a5"/>
+          <circle cx="124" cy="118" r="8" fill="#fca5a5"/>
+          <circle cx="76" cy="118" r="4" fill="#ef4444"/>
+          <circle cx="124" cy="118" r="4" fill="#ef4444"/>
+          <!-- 展開羽翼展翅剪影 -->
+          <path d="M 38 135 C 0 115, -50 155, -95 220 C -40 205, 15 185, 35 165 Z" fill="#450a0a"/>
+          <path d="M 162 135 C 200 115, 250 155, 295 220 C 240 205, 185 185, 165 165 Z" fill="#450a0a"/>
         </g>
 
-        <!-- 白芒草叢 (背景) -->
-        <g stroke="#334155" stroke-width="2" opacity="0.7">
-          <path d="M 50 600 Q 70 450 120 380 M 60 600 Q 90 440 140 370"/>
-          <path d="M 200 600 Q 220 460 260 390 M 210 600 Q 240 430 290 380"/>
-          <path d="M 550 600 Q 570 450 620 360 M 570 600 Q 600 440 650 370"/>
-          <path d="M 700 600 Q 720 470 760 400"/>
+        <!-- 白芒草叢 (中景) -->
+        <g stroke="#334155" stroke-width="2.5" stroke-linecap="round" opacity="0.75">
+          <path d="M 40 600 Q 60 440 120 360 M 55 600 Q 90 430 145 350"/>
+          <path d="M 190 600 Q 215 450 260 370 M 205 600 Q 235 420 290 360"/>
+          <path d="M 540 600 Q 565 440 615 350 M 560 600 Q 595 430 650 360"/>
+          <path d="M 690 600 Q 715 460 765 380"/>
         </g>
 
-        <!-- 狗雕像 (完整) -->
-        <g id="dogStatueFull">
-          <rect x="340" y="420" width="120" height="40" fill="#334155" rx="4"/>
-          <path d="M 370 420 L 370 330 Q 370 290 400 280 Q 420 280 430 310 L 430 420 Z" fill="#475569"/>
-          <path d="M 380 290 Q 370 250 400 240 Q 430 250 420 290 Z" fill="#475569"/>
-          <polygon points="380,260 370,220 395,250" fill="#334155"/>
-          <polygon points="420,260 430,220 405,250" fill="#334155"/>
+        <!-- 刻畫細緻的石狗雕像 (完整狀態) -->
+        <g id="dogStatueFull" filter="url(#statueShadow)">
+          <!-- 基座 -->
+          <rect x="330" y="415" width="140" height="45" fill="#1e293b" rx="5"/>
+          <rect x="320" y="450" width="160" height="25" fill="#0f172a" rx="3"/>
+          <!-- 獵犬主體與雕紋細節 -->
+          <path d="M 360 415 L 360 320 Q 360 280 395 270 Q 420 270 435 300 L 435 415 Z" fill="#334155"/>
+          <path d="M 375 280 Q 365 240 395 230 Q 425 240 415 280 Z" fill="#475569"/>
+          <!-- 獵犬立耳 -->
+          <polygon points="375,250 360,205 390,240" fill="#1e293b"/>
+          <polygon points="415,250 430,205 400,240" fill="#1e293b"/>
+          <!-- 胸牌與石紋分割線 -->
+          <path d="M 395 270 L 395 360" stroke="#1e293b" stroke-width="2"/>
         </g>
 
-        <!-- 狗雕像 (碎裂狀態) -->
-        <g id="dogStatueBroken" style="display: none;">
-          <rect x="340" y="440" width="120" height="20" fill="#1e293b" rx="2"/>
-          <polygon points="350,440 370,410 390,440" fill="#334155"/>
-          <polygon points="385,440 405,420 425,440" fill="#475569"/>
-          <polygon points="415,440 435,405 450,440" fill="#1e293b"/>
-          <polygon points="360,420 380,395 395,425" fill="#475569"/>
+        <!-- 石狗雕像 (碎裂狀態) -->
+        <g id="dogStatueBroken" style="display: none;" filter="url(#statueShadow)">
+          <rect x="320" y="450" width="160" height="25" fill="#0f172a" rx="3"/>
+          <polygon points="340,450 365,410 390,450" fill="#1e293b"/>
+          <polygon points="380,450 405,420 430,450" fill="#334155"/>
+          <polygon points="420,450 445,400 465,450" fill="#0f172a"/>
+          <polygon points="355,425 380,390 400,430" fill="#475569"/>
         </g>
 
-        <!-- 近景白芒草 (前景) -->
-        <g stroke="#64748b" stroke-width="3" opacity="0.9">
-          <path d="M 10 600 Q 40 410 90 320 M 30 600 Q 80 400 130 310"/>
-          <path d="M 150 600 Q 170 430 210 350"/>
-          <path d="M 620 600 Q 650 420 710 310 M 650 600 Q 690 410 750 330"/>
+        <!-- 白芒草叢 (前景近景) -->
+        <g stroke="#475569" stroke-width="3.5" stroke-linecap="round" opacity="0.95">
+          <path d="M 10 600 Q 45 400 95 300 M 30 600 Q 85 390 140 290"/>
+          <path d="M 140 600 Q 165 420 210 330"/>
+          <path d="M 610 600 Q 645 410 710 290 M 640 600 Q 690 400 760 310"/>
         </g>
       </svg>
 
@@ -556,49 +621,54 @@
       </div>
     </div>
 
-    <!-- ===== 4. 右邊場景：高樓大廈與五個黃色窗口 ===== -->
+    <!-- ===== 4. 右邊場景：高樓大廈與恰好 5 個黃色發光窗口 ===== -->
     <div id="rightScene" class="scene">
-      <!-- 往左回到主場景箭頭向左 ❮ -->
       <div class="nav-arrow left" onclick="switchScene('mainScene')">❮</div>
       <svg class="svg-background" viewBox="0 0 800 600" preserveAspectRatio="none">
-        <rect width="800" height="600" fill="#04060a"/>
-        
-        <!-- 高樓大廈剪影群 -->
-        <rect x="50" y="180" width="140" height="420" fill="#0b0f19"/>
-        <rect x="220" y="100" width="180" height="500" fill="#111827"/>
-        <rect x="440" y="220" width="130" height="380" fill="#0b0f19"/>
-        <rect x="600" y="140" width="160" height="460" fill="#0f172a"/>
+        <defs>
+          <radialGradient id="citySky" cx="50%" cy="30%" r="80%">
+            <stop offset="0%" stop-color="#090a10"/>
+            <stop offset="100%" stop-color="#020204"/>
+          </radialGradient>
+          <filter id="windowGlow">
+            <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#facc15" flood-opacity="0.9"/>
+          </filter>
+        </defs>
 
-        <!-- 恰好 5 個黃色發光窗口 (密碼線索: 5) -->
-        <g fill="#facc15" filter="drop-shadow(0 0 8px #eab308)">
-          <!-- 窗口 1 -->
-          <rect x="250" y="160" width="30" height="45" rx="3"/>
-          <!-- 窗口 2 -->
-          <rect x="330" y="160" width="30" height="45" rx="3"/>
-          <!-- 窗口 3 -->
-          <rect x="290" y="240" width="30" height="45" rx="3"/>
-          <!-- 窗口 4 -->
-          <rect x="250" y="320" width="30" height="45" rx="3"/>
-          <!-- 窗口 5 -->
-          <rect x="330" y="320" width="30" height="45" rx="3"/>
+        <rect width="800" height="600" fill="url(#citySky)"/>
+
+        <!-- 遠景建築剪影群 -->
+        <rect x="30" y="220" width="110" height="380" fill="#06080e"/>
+        <rect x="120" y="150" width="130" height="450" fill="#0a0d16"/>
+        <rect x="220" y="90" width="190" height="510" fill="#0f1422"/>
+        <rect x="430" y="200" width="140" height="400" fill="#0a0d16"/>
+        <rect x="590" y="120" width="170" height="480" fill="#080a10"/>
+
+        <!-- 恰好 5 個黃色發光窗口 (線索數字：5) -->
+        <g fill="#facc15" filter="url(#windowGlow)">
+          <rect x="250" y="150" width="32" height="48" rx="3"/>
+          <rect x="335" y="150" width="32" height="48" rx="3"/>
+          <rect x="292" y="235" width="32" height="48" rx="3"/>
+          <rect x="250" y="320" width="32" height="48" rx="3"/>
+          <rect x="335" y="320" width="32" height="48" rx="3"/>
         </g>
 
-        <!-- 其他熄滅的深暗窗戶 (不發光) -->
-        <g fill="#1e293b" opacity="0.5">
-          <rect x="80" y="220" width="25" height="35"/>
-          <rect x="130" y="220" width="25" height="35"/>
-          <rect x="80" y="280" width="25" height="35"/>
-          <rect x="130" y="280" width="25" height="35"/>
+        <!-- 其他無發光黑窗（豐富細節） -->
+        <g fill="#1a202c" opacity="0.4">
+          <rect x="60" y="260" width="22" height="32"/>
+          <rect x="95" y="260" width="22" height="32"/>
+          <rect x="60" y="320" width="22" height="32"/>
+          <rect x="95" y="320" width="22" height="32"/>
 
-          <rect x="470" y="270" width="25" height="35"/>
-          <rect x="520" y="270" width="25" height="35"/>
-          <rect x="470" y="330" width="25" height="35"/>
-          <rect x="520" y="330" width="25" height="35"/>
+          <rect x="460" y="260" width="24" height="35"/>
+          <rect x="510" y="260" width="24" height="35"/>
+          <rect x="460" y="320" width="24" height="35"/>
+          <rect x="510" y="320" width="24" height="35"/>
 
-          <rect x="630" y="200" width="25" height="35"/>
-          <rect x="680" y="200" width="25" height="35"/>
-          <rect x="630" y="260" width="25" height="35"/>
-          <rect x="680" y="260" width="25" height="35"/>
+          <rect x="620" y="180" width="26" height="38"/>
+          <rect x="670" y="180" width="26" height="38"/>
+          <rect x="620" y="240" width="26" height="38"/>
+          <rect x="680" y="240" width="26" height="38"/>
         </g>
       </svg>
     </div>
@@ -635,33 +705,36 @@
     <div id="mirrorScene" class="scene">
       <div class="mirror-frame" onclick="triggerMirrorReveal()">
         <div class="mirror-glass">
-          <!-- 草鴞倒影 SVG -->
+          <!-- 精細草鴞倒影 SVG (富含細節特徵) -->
           <svg id="owlSvg" class="owl-reflection" viewBox="0 0 200 200">
-            <path d="M 100 30 C 60 30, 30 70, 30 110 C 30 150, 70 180, 100 180 C 130 180, 170 150, 170 110 C 170 70, 140 30, 100 30 Z" fill="#d97706" opacity="0.8"/>
-            <path d="M 100 55 C 80 40, 50 60, 50 95 C 50 130, 85 155, 100 165 C 115 155, 150 130, 150 95 C 150 60, 120 40, 100 55 Z" fill="#fef3c7"/>
-            <circle cx="75" cy="95" r="14" fill="#000"/>
-            <circle cx="75" cy="95" r="12" fill="#b45309"/>
-            <circle cx="75" cy="95" r="5" fill="#000"/>
-            <circle cx="73" cy="92" r="2" fill="#fff"/>
-
-            <circle cx="125" cy="95" r="14" fill="#000"/>
-            <circle cx="125" cy="95" r="12" fill="#b45309"/>
-            <circle cx="125" cy="95" r="5" fill="#000"/>
-            <circle cx="123" cy="92" r="2" fill="#fff"/>
-
-            <polygon points="100,105 94,125 106,125" fill="#78350f"/>
+            <!-- 身體與斑紋羽毛 -->
+            <path d="M 100 25 C 55 25, 25 65, 25 110 C 25 155, 65 185, 100 185 C 135 185, 175 155, 175 110 C 175 65, 145 25, 100 25 Z" fill="#d97706" opacity="0.85"/>
+            <!-- 草鴞著名心形面具面盤 -->
+            <path d="M 100 48 C 78 32, 45 55, 45 95 C 45 135, 82 160, 100 172 C 118 160, 155 135, 155 95 C 155 55, 122 32, 100 48 Z" fill="#fef3c7"/>
+            <!-- 左眼 -->
+            <circle cx="73" cy="92" r="15" fill="#000"/>
+            <circle cx="73" cy="92" r="13" fill="#b45309"/>
+            <circle cx="73" cy="92" r="6" fill="#000"/>
+            <circle cx="70" cy="88" r="2.5" fill="#fff"/>
+            <!-- 右眼 -->
+            <circle cx="127" cy="92" r="15" fill="#000"/>
+            <circle cx="127" cy="92" r="13" fill="#b45309"/>
+            <circle cx="127" cy="92" r="6" fill="#000"/>
+            <circle cx="124" cy="88" r="2.5" fill="#fff"/>
+            <!-- 喙部 -->
+            <polygon points="100,102 93,124 107,124" fill="#78350f"/>
           </svg>
 
           <!-- 鏡面裂痕 overlay -->
           <svg class="crack-overlay" viewBox="0 0 200 300">
-            <path d="M 20 0 L 80 120 L 140 180 M 80 120 L 40 220 M 140 180 L 190 280" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" fill="none"/>
+            <path d="M 20 0 L 80 120 L 140 180 M 80 120 L 40 220 M 140 180 L 190 280" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" fill="none"/>
           </svg>
         </div>
       </div>
 
       <div class="story-text" id="storyText"></div>
 
-      <!-- 公視新聞連結（替代原先重新進入輪迴按鈕） -->
+      <!-- 公視新聞連結按鈕 -->
       <a id="ptsNewsLink" href="https://news.pts.org.tw/article/753895" target="_blank" rel="noopener noreferrer" class="start-btn" style="display:none; margin-top: 24px; font-size: 1.05rem; padding: 12px 28px;">
         📰 閱讀公視專題：草鴞的生存危機與滅絕威脅
       </a>
@@ -670,6 +743,60 @@
   </div>
 
   <script>
+    // 背景大氣閃爍塵埃與霧氣 Canvas 動畫
+    const canvas = document.getElementById('ambientCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 0.4 - 0.2;
+        this.speedY = -Math.random() * 0.3 - 0.1;
+        this.opacity = Math.random() * 0.5 + 0.1;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.y < 0 || this.x < 0 || this.x > canvas.width) {
+          this.reset();
+          this.y = canvas.height;
+        }
+      }
+      draw() {
+        ctx.fillStyle = `rgba(250, 204, 21, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 40; i++) {
+      particles.push(new Particle());
+    }
+
+    function animateAmbient() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateAmbient);
+    }
+    animateAmbient();
+
     // Web Audio 音效合成器
     let audioCtx = null;
 
@@ -698,8 +825,8 @@
 
         if (type === 'click') {
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(400, now);
-          osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+          osc.frequency.setValueAtTime(380, now);
+          osc.frequency.exponentialRampToValueAtTime(90, now + 0.08);
           gain.gain.setValueAtTime(0.3, now);
           gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
           osc.start(now);
@@ -707,14 +834,14 @@
         } else if (type === 'unlock') {
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.1);
-          osc.frequency.setValueAtTime(783.99, now + 0.2);
+          osc.frequency.setValueAtTime(659.25, now + 0.12);
+          osc.frequency.setValueAtTime(783.99, now + 0.24);
           gain.gain.setValueAtTime(0.4, now);
-          gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.6);
           osc.start(now);
-          osc.stop(now + 0.5);
+          osc.stop(now + 0.6);
         } else if (type === 'shatter') {
-          const bufferSize = audioCtx.sampleRate * 0.4;
+          const bufferSize = audioCtx.sampleRate * 0.45;
           const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
           const data = buffer.getChannelData(0);
           for (let i = 0; i < bufferSize; i++) {
@@ -724,21 +851,21 @@
           noise.buffer = buffer;
           const noiseFilter = audioCtx.createBiquadFilter();
           noiseFilter.type = 'highpass';
-          noiseFilter.frequency.value = 1000;
+          noiseFilter.frequency.value = 900;
           
           noise.connect(noiseFilter);
           noiseFilter.connect(gain);
-          gain.gain.setValueAtTime(0.6, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          gain.gain.setValueAtTime(0.65, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
           noise.start(now);
         } else if (type === 'eerie') {
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(110, now);
-          osc.frequency.exponentialRampToValueAtTime(55, now + 2.0);
-          gain.gain.setValueAtTime(0.2, now);
-          gain.gain.linearRampToValueAtTime(0.01, now + 2.0);
+          osc.frequency.exponentialRampToValueAtTime(55, now + 2.2);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 2.2);
           osc.start(now);
-          osc.stop(now + 2.0);
+          osc.stop(now + 2.2);
         }
       } catch (e) {
         console.log('Audio playback skipped:', e);
@@ -819,7 +946,7 @@
       try { playSound('click'); } catch(e){}
       document.getElementById('keyItem').style.display = 'none';
 
-      // 直接切換至鏡子畫面，去除動畫過渡
+      // 切換至鏡子畫面
       switchScene('mirrorScene', 'flex');
       try { playSound('eerie'); } catch(e){}
     }
